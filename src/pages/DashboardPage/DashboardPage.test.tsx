@@ -87,16 +87,6 @@ function buildAuthenticatedContext(
   };
 }
 
-/** Builds a mock AuthContext value that looks like a logged-out user. */
-function buildUnauthenticatedContext(): ReturnType<typeof AuthContextModule.useAuth> {
-  return {
-    user: null,
-    isAuthenticated: false,
-    login: vi.fn().mockResolvedValue({ success: false, error: 'Not logged in' }),
-    logout: vi.fn(),
-  };
-}
-
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
