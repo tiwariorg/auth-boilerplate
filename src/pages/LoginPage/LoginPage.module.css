@@ -9,23 +9,67 @@
 /*
  * Centers the login card both horizontally and vertically within the
  * full viewport height, providing a classic centered-card login layout.
+ * A subtle grey background distinguishes the page from the card itself.
  */
 .page {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   min-height: 100vh;
-  padding: 1rem;
-  background-color: #f5f5f5;
+  background: #f5f5f5;
 }
 
-/* ─── Heading ────────────────────────────────────────────────────────────── */
+/* ─── Card container ─────────────────────────────────────────────────────── */
 
+/*
+ * Provides the white card that holds the heading, subtitle, and form.
+ * max-width caps width on wider screens; width: 100% ensures it shrinks
+ * gracefully on narrow viewports.
+ */
+.container {
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 440px;
+}
+
+/* ─── Card title ─────────────────────────────────────────────────────────── */
+
+/*
+ * Primary heading displayed at the top of the login card.
+ */
+.title {
+  text-align: center;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+/* ─── Card subtitle ──────────────────────────────────────────────────────── */
+
+/*
+ * Secondary descriptive text shown beneath the title, rendered at a reduced
+ * font size with a muted colour to establish visual hierarchy.
+ */
+.subtitle {
+  text-align: center;
+  color: #6b7280;
+  margin-bottom: 2rem;
+  font-size: 0.875rem;
+}
+
+/* ─── Standalone heading (legacy / fallback) ─────────────────────────────── */
+
+/*
+ * Retained for backward-compatibility with the current LoginPage render
+ * output, which uses styles.heading directly without a wrapping .container.
+ * Can be removed once the page markup is updated to use .container/.title.
+ */
 .heading {
   font-size: 1.75rem;
   font-weight: 700;
-  margin-bottom: 1.5rem;
-  color: #1a1a1a;
+  color: #1f2937;
   text-align: center;
+  margin-bottom: 1.5rem;
 }
