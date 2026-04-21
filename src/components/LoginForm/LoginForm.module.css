@@ -1,0 +1,128 @@
+/* LoginForm.module.css
+ *
+ * CSS Module for the LoginForm component.
+ * Ticket: KAN-3
+ */
+
+/* ─── Form container ─────────────────────────────────────────────────────── */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 400px;
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+  padding: 2rem;
+}
+
+/* ─── Title ──────────────────────────────────────────────────────────────── */
+
+.title {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+/* ─── Field group (label + input + inline error) ─────────────────────────── */
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 1rem;
+}
+
+/* ─── Label ──────────────────────────────────────────────────────────────── */
+
+.label {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+/* ─── Input ──────────────────────────────────────────────────────────────── */
+
+.input {
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.input:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.25);
+}
+
+/* ─── Input error state ──────────────────────────────────────────────────── */
+
+/*
+ * Applied alongside .input when a field-level validation error is present.
+ * Keeps the red border even when the field is focused so the error is clear.
+ */
+.inputError {
+  border-color: #c00;
+}
+
+.inputError:focus {
+  border-color: #c00;
+  box-shadow: 0 0 0 3px rgba(204, 0, 0, 0.2);
+}
+
+/* ─── Field-level error message ──────────────────────────────────────────── */
+
+.fieldError {
+  color: #c00;
+  font-size: 0.75rem;
+}
+
+/* ─── Server / form-level error banner ───────────────────────────────────── */
+
+/*
+ * Referenced as `styles.serverError` in the component; corresponds to the
+ * `.error` class described in the ticket specification.
+ */
+.serverError {
+  background: #fee;
+  color: #c00;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* ─── Submit button ──────────────────────────────────────────────────────── */
+
+/*
+ * Referenced as `styles.submitButton` in the component; corresponds to the
+ * `.button` class described in the ticket specification.
+ */
+.submitButton {
+  padding: 0.75rem;
+  background: #4f46e5;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: #4338ca;
+}
+
+.submitButton:focus-visible {
+  outline: 3px solid rgba(79, 70, 229, 0.5);
+  outline-offset: 2px;
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

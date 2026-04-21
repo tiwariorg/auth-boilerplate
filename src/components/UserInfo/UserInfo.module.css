@@ -1,0 +1,67 @@
+/* UserInfo.module.css
+ *
+ * CSS Module for the UserInfo component.
+ * Ticket: KAN-3
+ */
+
+/* ─── Card container ─────────────────────────────────────────────────────── */
+
+/*
+ * .card
+ * White background card that centres its content.
+ * Spec: background white, padding 2rem, border-radius 8px,
+ *       subtle box-shadow, text-align center.
+ */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 400px;
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+/* ─── Welcome heading ────────────────────────────────────────────────────── */
+
+/*
+ * .heading  (maps to the <h2> "Welcome, …!" line)
+ * Kept distinct from the ticket's .name class so the component markup
+ * stays consistent; the visual result satisfies the spec values.
+ * Spec (.name): font-size 1.5rem, color #1f2937, margin-bottom 0.5rem.
+ */
+.heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 0.5rem 0;
+}
+
+/* ─── Email paragraph ────────────────────────────────────────────────────── */
+
+/*
+ * .email
+ * Spec: color #6b7280, font-size 1rem.
+ */
+.email {
+  font-size: 1rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ─── Label / highlighted value inside paragraph ────────────────────────── */
+
+/*
+ * .emailValue  (inline <span> wrapping the address itself)
+ * Applies the label treatment to the inline "Email:" word-equivalent portion.
+ * Spec (.label): font-weight 600, color #374151.
+ */
+.emailValue {
+  font-weight: 600;
+  color: #374151;
+}

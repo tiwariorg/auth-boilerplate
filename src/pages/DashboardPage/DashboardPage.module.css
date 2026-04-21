@@ -1,0 +1,99 @@
+/* DashboardPage.module.css
+ *
+ * CSS Module for the DashboardPage route-level component.
+ * Ticket: KAN-3
+ */
+
+/* ─── Page wrapper ───────────────────────────────────────────────────────── */
+
+/*
+ * .page
+ * Full-viewport-height flex column that centres its children both
+ * horizontally and vertically.  The subtle grey background (#f5f5f5)
+ * matches the LoginPage wrapper and provides contrast against inner cards.
+ */
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding: 2rem;
+}
+
+/* ─── Inner container ────────────────────────────────────────────────────── */
+
+/*
+ * .container
+ * Caps the layout width at 600 px and stacks its children (heading,
+ * UserInfo card, logout button) with a consistent 2 rem gap.
+ * width: 100% ensures it shrinks gracefully on narrow viewports.
+ */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  max-width: 600px;
+  width: 100%;
+}
+
+/* ─── Page title ─────────────────────────────────────────────────────────── */
+
+/*
+ * .title
+ * Primary <h1> inside the container.
+ * Shares the dark-grey typographic colour used across the design system.
+ */
+.title {
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+/* ─── Page heading (alias used by current DashboardPage.tsx) ─────────────── */
+
+/*
+ * .heading
+ * The component currently references `styles.heading`; this class mirrors
+ * the .title spec so both names resolve to the same visual output, keeping
+ * the component and the ticket spec in sync without a markup change.
+ */
+.heading {
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+/* ─── Logout button ──────────────────────────────────────────────────────── */
+
+/*
+ * .logoutButton
+ * A prominent, destructive-action button styled in red (#ef4444) to signal
+ * that clicking it ends the user's session.
+ * Hover darkens the background to #dc2626 for clear interactivity feedback.
+ * focus-visible ring uses a softened red tone to satisfy keyboard-a11y.
+ */
+.logoutButton {
+  padding: 0.75rem 2rem;
+  background: #ef4444;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.logoutButton:hover {
+  background: #dc2626;
+}
+
+.logoutButton:active {
+  background: #b91c1c;
+  transform: scale(0.98);
+}
+
+.logoutButton:focus-visible {
+  outline: 3px solid #fca5a5;
+  outline-offset: 3px;
+}
