@@ -244,9 +244,9 @@ describe('Deploy workflow – build-and-deploy job steps', () => {
     expect(step!.uses).toBe('actions/setup-node@v4')
   })
 
-  it('Node.js setup step should be named "Setup Node.js"', () => {
+  it('Node.js setup step should be named "Setup Node"', () => {
     const step = steps.find((s) => s.uses?.startsWith('actions/setup-node'))
-    expect(step!.name).toBe('Setup Node.js')
+    expect(step!.name).toBe('Setup Node')
   })
 
   it('Node.js setup step should configure node-version to "20"', () => {
@@ -255,14 +255,19 @@ describe('Deploy workflow – build-and-deploy job steps', () => {
     expect(String(step!.with!['node-version'])).toBe('20')
   })
 
+  it('Node.js setup step should enable npm caching', () => {
+    const step = steps.find((s) => s.uses?.startsWith('actions/setup-node'))
+    expect(step!.with!['cache']).toBe('npm')
+  })
+
   // --- Install dependencies ---
-  it('should include an "Install dependencies" step that runs npm ci', () => {
+  it('should include an "Install Dependencies" step that runs npm ci', () => {
     const step = steps.find(
-      (s) => s.name === 'Install dependencies' || s.run?.includes('npm ci'),
+      (s) => s.name === 'Install Dependencies' || s.run?.includes('npm ci'),
     )
     expect(step).toBeDefined()
     expect(step!.run).toContain('npm ci')
-    expect(step!.name).toBe('Install dependencies')
+    expect(step!.name).toBe('Install Dependencies')
   })
 
   // --- Build ---
@@ -278,10 +283,14 @@ describe('Deploy workflow – build-and-deploy job steps', () => {
   })
 
   // --- Configure Pages ---
-  it('should include a "Configure Pages" step using actions/configure-pages@v4', () => {
+  it('should include a "Configure Pages" step using actions/configure-pages', () => {
     const step = steps.find((s) => s.uses?.startsWith('actions/configure-pages'))
     expect(step).toBeDefined()
-    expect(step!.uses).toBe('actions/configure-pages@v4')
+  })
+
+  it('"Configure Pages" step should use actions/configure-pages@v5', () => {
+    const step = steps.find((s) => s.uses?.startsWith('actions/configure-pages'))
+    expect(step!.uses).toBe('actions/configure-pages@v5')
   })
 
   it('"Configure Pages" step should have the correct name', () => {
@@ -290,18 +299,18 @@ describe('Deploy workflow – build-and-deploy job steps', () => {
   })
 
   // --- Upload artifact ---
-  it('should include an "Upload artifact" step using actions/upload-pages-artifact@v3', () => {
+  it('should include an "Upload Artifact" step using actions/upload-pages-artifact@v3', () => {
     const step = steps.find((s) => s.uses?.startsWith('actions/upload-pages-artifact'))
     expect(step).toBeDefined()
     expect(step!.uses).toBe('actions/upload-pages-artifact@v3')
   })
 
-  it('"Upload artifact" step should have the correct name', () => {
+  it('"Upload Artifact" step should have the correct name', () => {
     const step = steps.find((s) => s.uses?.startsWith('actions/upload-pages-artifact'))
-    expect(step!.name).toBe('Upload artifact')
+    expect(step!.name).toBe('Upload Artifact')
   })
 
-  it('"Upload artifact" step should upload from the "./dist" directory', () => {
+  it('"Upload Artifact" step should upload from the "./dist" directory', () => {
     const step = steps.find((s) => s.uses?.startsWith('actions/upload-pages-artifact'))
     expect(step!.with).toBeDefined()
     expect(step!.with!['path']).toBe('./dist')
@@ -433,9 +442,9 @@ describe('Deploy workflow – action version pinning', () => {
     expect(step!.uses).toBe('actions/setup-node@v4')
   })
 
-  it('actions/configure-pages should be pinned to @v4', () => {
+  it('actions/configure-pages should be pinned to @v5', () => {
     const step = steps.find((s) => s.uses?.startsWith('actions/configure-pages'))
-    expect(step!.uses).toBe('actions/configure-pages@v4')
+    expect(step!.uses).toBe('actions/configure-pages@v5')
   })
 
   it('actions/upload-pages-artifact should be pinned to @v3', () => {
