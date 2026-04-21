@@ -1,12 +1,26 @@
+/* =============================================================================
+   Global CSS Reset
+   KAN-3
+   ============================================================================= */
+
+/* Apply border-box sizing to every element and its pseudo-elements */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
+/* Remove default margin and padding from the document body */
 body {
-  font-family: system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 0;
+
+  /* System-native font stack */
+  font-family: system-ui, sans-serif;
+
+  /* Comfortable default line height */
   line-height: 1.5;
+
+  /* Smoother font rendering on WebKit/Blink browsers */
+  -webkit-font-smoothing: antialiased;
 }
