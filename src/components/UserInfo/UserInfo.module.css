@@ -1,0 +1,46 @@
+/* UserInfo.module.css
+ *
+ * CSS Module for the UserInfo component.
+ * Ticket: KAN-3
+ */
+
+/* ─── Card container ─────────────────────────────────────────────────────── */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 400px;
+  width: 100%;
+  margin-right: auto;
+  margin-left: auto;
+  padding: 2rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* ─── Welcome heading ────────────────────────────────────────────────────── */
+
+.heading {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+/* ─── Email paragraph ────────────────────────────────────────────────────── */
+
+.email {
+  font-size: 0.9375rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ─── Highlighted value inside paragraph ────────────────────────────────── */
+
+.emailValue {
+  color: #111827;
+  font-weight: 500;
+}
