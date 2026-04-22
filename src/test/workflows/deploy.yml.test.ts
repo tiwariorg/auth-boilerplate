@@ -9,6 +9,15 @@
  *
  * The deploy workflow uses a SINGLE combined job called "build-and-deploy"
  * that handles checkout, build, and GitHub Pages deployment in sequence.
+ *
+ * Actual step order in the file:
+ *   0  Checkout                (actions/checkout@v4)
+ *   1  Setup Node              (actions/setup-node@v4  – node-version: 20, no cache key)
+ *   2  Configure Pages         (actions/configure-pages@v5)
+ *   3  Install Dependencies    (run: npm ci)
+ *   4  Build                   (run: npm run build)
+ *   5  Upload Artifact         (actions/upload-pages-artifact@v3  path: ./dist)
+ *   6  Deploy to GitHub Pages  (actions/deploy-pages@v4  id: deployment)
  */
 
 import { describe, it, expect, beforeAll } from 'vitest'
@@ -255,9 +264,11 @@ describe('Deploy workflow – build-and-deploy job steps', () => {
     expect(String(step!.with!['node-version'])).toBe('20')
   })
 
-  it('Node.js setup step should enable npm caching', () => {
+  // The deploy workflow does NOT set cache: npm on setup-node (unlike CI).
+  // It relies solely on npm ci for a clean install on every run.
+  it('Node.js setup step should NOT configure a cache in the deploy workflow', () => {
     const step = steps.find((s) => s.uses?.startsWith('actions/setup-node'))
-    expect(step!.with!['cache']).toBe('npm')
+    expect(step!.with!['cache']).toBeUndefined()
   })
 
   // --- Install dependencies ---
@@ -270,6 +281,12 @@ describe('Deploy workflow – build-and-deploy job steps', () => {
     expect(step!.name).toBe('Install Dependencies')
   })
 
+  it('Install Dependencies step should use npm ci (not npm install)', () => {
+    const step = steps.find((s) => s.name === 'Install Dependencies')
+    expect(step!.run).not.toContain('npm install')
+    expect(step!.run).toContain('npm ci')
+  })
+
   // --- Build ---
   it('should include a "Build" step that runs npm run build', () => {
     const step = steps.find((s) => s.name === 'Build' || s.run?.includes('npm run build'))
@@ -280,6 +297,11 @@ describe('Deploy workflow – build-and-deploy job steps', () => {
   it('"Build" step should have the correct name', () => {
     const step = steps.find((s) => s.run?.includes('npm run build'))
     expect(step!.name).toBe('Build')
+  })
+
+  it('"Build" step should not chain lint (no && npm run lint)', () => {
+    const step = steps.find((s) => s.name === 'Build')
+    expect(step!.run).not.toContain('lint')
   })
 
   // --- Configure Pages ---
@@ -336,6 +358,15 @@ describe('Deploy workflow – build-and-deploy job steps', () => {
 
 // ---------------------------------------------------------------------------
 // Steps – ordering
+//
+// Actual order in deploy.yml:
+//   0  Checkout
+//   1  Setup Node
+//   2  Configure Pages   ← comes BEFORE Install/Build
+//   3  Install Dependencies
+//   4  Build
+//   5  Upload Artifact
+//   6  Deploy to GitHub Pages
 // ---------------------------------------------------------------------------
 
 describe('Deploy workflow – step ordering', () => {
@@ -345,16 +376,16 @@ describe('Deploy workflow – step ordering', () => {
     steps = workflow.jobs['build-and-deploy'].steps
   })
 
-  it('steps should be ordered: checkout → node → install → build → configure-pages → upload → deploy', () => {
+  it('steps should be ordered: checkout → node → configure-pages → install → build → upload → deploy', () => {
     const idx = (matcher: (s: WorkflowStep) => boolean) => steps.findIndex(matcher)
 
     const checkoutIdx = idx((s) => s.uses?.startsWith('actions/checkout') ?? false)
     const nodeIdx = idx((s) => s.uses?.startsWith('actions/setup-node') ?? false)
-    const installIdx = idx((s) => s.run?.includes('npm ci') ?? false)
-    const buildIdx = idx((s) => s.run?.includes('npm run build') ?? false)
     const configurePagesIdx = idx(
       (s) => s.uses?.startsWith('actions/configure-pages') ?? false,
     )
+    const installIdx = idx((s) => s.run?.includes('npm ci') ?? false)
+    const buildIdx = idx((s) => s.run?.includes('npm run build') ?? false)
     const uploadIdx = idx(
       (s) => s.uses?.startsWith('actions/upload-pages-artifact') ?? false,
     )
@@ -363,18 +394,56 @@ describe('Deploy workflow – step ordering', () => {
     // All steps must exist
     expect(checkoutIdx).toBeGreaterThanOrEqual(0)
     expect(nodeIdx).toBeGreaterThanOrEqual(0)
+    expect(configurePagesIdx).toBeGreaterThanOrEqual(0)
     expect(installIdx).toBeGreaterThanOrEqual(0)
     expect(buildIdx).toBeGreaterThanOrEqual(0)
-    expect(configurePagesIdx).toBeGreaterThanOrEqual(0)
     expect(uploadIdx).toBeGreaterThanOrEqual(0)
     expect(deployIdx).toBeGreaterThanOrEqual(0)
 
-    // Ordering assertions
+    // Ordering assertions reflecting the actual file layout
     expect(checkoutIdx).toBeLessThan(nodeIdx)
-    expect(nodeIdx).toBeLessThan(installIdx)
+    expect(nodeIdx).toBeLessThan(configurePagesIdx)
+    expect(configurePagesIdx).toBeLessThan(installIdx)
     expect(installIdx).toBeLessThan(buildIdx)
-    expect(buildIdx).toBeLessThan(configurePagesIdx)
-    expect(configurePagesIdx).toBeLessThan(uploadIdx)
+    expect(buildIdx).toBeLessThan(uploadIdx)
+    expect(uploadIdx).toBeLessThan(deployIdx)
+  })
+
+  it('Checkout should be the very first step (index 0)', () => {
+    expect(steps[0].uses).toBe('actions/checkout@v4')
+  })
+
+  it('Deploy to GitHub Pages should be the very last step', () => {
+    expect(steps[steps.length - 1].uses).toBe('actions/deploy-pages@v4')
+  })
+
+  it('Configure Pages must come before Install Dependencies', () => {
+    const configurePagesIdx = steps.findIndex((s) =>
+      s.uses?.startsWith('actions/configure-pages'),
+    )
+    const installIdx = steps.findIndex((s) => s.run?.includes('npm ci'))
+    expect(configurePagesIdx).toBeLessThan(installIdx)
+  })
+
+  it('Install Dependencies must come before Build', () => {
+    const installIdx = steps.findIndex((s) => s.run?.includes('npm ci'))
+    const buildIdx = steps.findIndex((s) => s.run?.includes('npm run build'))
+    expect(installIdx).toBeLessThan(buildIdx)
+  })
+
+  it('Build must come before Upload Artifact', () => {
+    const buildIdx = steps.findIndex((s) => s.run?.includes('npm run build'))
+    const uploadIdx = steps.findIndex((s) =>
+      s.uses?.startsWith('actions/upload-pages-artifact'),
+    )
+    expect(buildIdx).toBeLessThan(uploadIdx)
+  })
+
+  it('Upload Artifact must come before Deploy to GitHub Pages', () => {
+    const uploadIdx = steps.findIndex((s) =>
+      s.uses?.startsWith('actions/upload-pages-artifact'),
+    )
+    const deployIdx = steps.findIndex((s) => s.uses?.startsWith('actions/deploy-pages'))
     expect(uploadIdx).toBeLessThan(deployIdx)
   })
 })
@@ -503,5 +572,14 @@ describe('Deploy workflow – cross-cutting concerns', () => {
     const env = workflow.jobs['build-and-deploy'].environment!
     expect(env.url).toContain('deployment')
     expect(env.url).toContain('page_url')
+  })
+
+  it('workflow-level permissions should not be empty', () => {
+    expect(Object.keys(workflow.permissions).length).toBeGreaterThan(0)
+  })
+
+  it('the workflow should define a concurrency block to prevent overlapping deployments', () => {
+    expect(workflow.concurrency).toBeDefined()
+    expect(workflow.concurrency.group).toBe('pages')
   })
 })
