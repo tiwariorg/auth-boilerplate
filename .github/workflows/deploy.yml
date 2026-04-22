@@ -6,12 +6,12 @@ on:
       - main
 
 permissions:
+  contents: read
   pages: write
   id-token: write
-  contents: read
 
 concurrency:
-  group: 'pages'
+  group: pages
   cancel-in-progress: false
 
 jobs:
@@ -25,25 +25,107 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Detect package manager
+        id: detect-package-manager
+        shell: bash
+        run: |
+          if [ -f "pnpm-lock.yaml" ]; then
+            echo "Detected package manager: pnpm"
+            echo "manager=pnpm" >> $GITHUB_OUTPUT
+            corepack enable
+          elif [ -f "yarn.lock" ]; then
+            echo "Detected package manager: yarn"
+            echo "manager=yarn" >> $GITHUB_OUTPUT
+          else
+            echo "Detected package manager: npm"
+            echo "manager=npm" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Detect Node version
+        id: detect-node-version
+        shell: bash
+        run: |
+          if [ -f ".nvmrc" ]; then
+            NODE_VERSION=$(cat .nvmrc | tr -d '[:space:]')
+            echo "Detected Node version from .nvmrc: $NODE_VERSION"
+            echo "node-version=$NODE_VERSION" >> $GITHUB_OUTPUT
+          elif [ -f ".node-version" ]; then
+            NODE_VERSION=$(cat .node-version | tr -d '[:space:]')
+            echo "Detected Node version from .node-version: $NODE_VERSION"
+            echo "node-version=$NODE_VERSION" >> $GITHUB_OUTPUT
+          elif node -e "const p = require('./package.json'); process.exit(p.engines && p.engines.node ? 0 : 1)" 2>/dev/null; then
+            NODE_VERSION=$(node -e "const p = require('./package.json'); console.log(p.engines.node)" | tr -d '[:space:]')
+            echo "Detected Node version from package.json engines.node: $NODE_VERSION"
+            echo "node-version=$NODE_VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "No Node version specifier found, defaulting to 20"
+            echo "node-version=20" >> $GITHUB_OUTPUT
+          fi
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: ${{ steps.detect-node-version.outputs.node-version }}
+          cache: ${{ steps.detect-package-manager.outputs.manager }}
 
-      - name: Install Dependencies
-        run: npm ci
+      - name: Install dependencies
+        shell: bash
+        run: |
+          MANAGER="${{ steps.detect-package-manager.outputs.manager }}"
+          if [ "$MANAGER" = "pnpm" ]; then
+            pnpm install --frozen-lockfile
+          elif [ "$MANAGER" = "yarn" ]; then
+            yarn install --frozen-lockfile
+          else
+            if [ -f "package-lock.json" ]; then
+              npm ci
+            else
+              npm install
+            fi
+          fi
 
       - name: Build
-        run: npm run build
+        shell: bash
+        env:
+          CI: false
+        run: |
+          MANAGER="${{ steps.detect-package-manager.outputs.manager }}"
+          if [ "$MANAGER" = "pnpm" ]; then
+            pnpm build
+          elif [ "$MANAGER" = "yarn" ]; then
+            yarn build
+          else
+            npm run build
+          fi
+
+      - name: Detect build output directory
+        id: detect-build-dir
+        shell: bash
+        run: |
+          if [ -d "dist" ]; then
+            echo "Detected build directory: dist"
+            echo "build-dir=dist" >> $GITHUB_OUTPUT
+          elif [ -d "build" ]; then
+            echo "Detected build directory: build"
+            echo "build-dir=build" >> $GITHUB_OUTPUT
+          elif [ -d "out" ]; then
+            echo "Detected build directory: out"
+            echo "build-dir=out" >> $GITHUB_OUTPUT
+          elif [ -d ".next" ]; then
+            echo "Detected build directory: .next"
+            echo "build-dir=.next" >> $GITHUB_OUTPUT
+          else
+            echo "No build directory found, defaulting to dist"
+            echo "build-dir=dist" >> $GITHUB_OUTPUT
+          fi
 
       - name: Configure Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v4
 
-      - name: Upload Artifact
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './dist'
+          path: ${{ steps.detect-build-dir.outputs.build-dir }}
 
       - name: Deploy to GitHub Pages
         id: deployment
