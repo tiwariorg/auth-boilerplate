@@ -21,7 +21,7 @@
     "noUncheckedSideEffectImports": true,
 
     /* Vitest types so vite.config.ts can use the `test` block */
-    "types": ["vitest/globals"]
+    "types": ["vitest"]
   },
   "include": ["vite.config.ts"]
 }
