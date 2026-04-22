@@ -2,38 +2,28 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
+    branches: ['*']
   pull_request:
-    branches:
-      - main
+    branches: ['main']
 
 jobs:
   ci:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
           cache: 'npm'
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: npm ci
 
       - name: Lint
-        # Known TS2769 type error in vite.config.ts — allow lint to pass without
-        # blocking the build until the upstream type issue is resolved.
-        run: npm run lint --if-present || true
-
-      - name: Run Tests
-        # Tests may not be fully configured yet; use || true so missing setup
-        # does not block the quality-gate build step.
-        run: npx vitest run --if-present || true
+        run: npm run lint --if-present
 
       - name: Build
         run: npm run build
