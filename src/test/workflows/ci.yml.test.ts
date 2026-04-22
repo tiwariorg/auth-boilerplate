@@ -6,6 +6,13 @@
  *
  * Source file: .github/workflows/ci.yml
  * Actual content verified against the live YAML before writing assertions.
+ *
+ * Key facts about the actual CI workflow:
+ *  - Triggers: push (all branches, no branch filter) + pull_request (main only)
+ *  - One job: "ci" running on ubuntu-latest
+ *  - 6 steps: Checkout → Setup Node → Install Dependencies → Lint → Run Tests → Build
+ *  - Run Tests step: `npm run test -- --passWithNoTests`
+ *  - Lint step:      `npm run lint --if-present`
  */
 
 import { describe, it, expect, beforeAll } from 'vitest'
@@ -87,22 +94,11 @@ describe('CI workflow – top-level metadata', () => {
     expect(triggers).toContain('pull_request')
   })
 
-  it('push trigger should be scoped to the "main" branch', () => {
-    const pushConfig = (workflow.on as Record<string, unknown>)['push'] as Record<
-      string,
-      unknown
-    >
-    expect(pushConfig).toBeDefined()
-    expect(pushConfig['branches']).toBeDefined()
-    expect(pushConfig['branches']).toContain('main')
-  })
-
-  it('push trigger should list exactly one branch', () => {
-    const pushConfig = (workflow.on as Record<string, unknown>)['push'] as Record<
-      string,
-      unknown
-    >
-    expect((pushConfig['branches'] as string[]).length).toBe(1)
+  it('push trigger should run on ALL branches (no branch filter)', () => {
+    // The push trigger in ci.yml has no branches list – it fires on every branch.
+    // js-yaml parses "push:" with no value as null.
+    const pushConfig = (workflow.on as Record<string, unknown>)['push']
+    expect(pushConfig).toBeNull()
   })
 
   it('pull_request trigger should be scoped to the "main" branch', () => {
@@ -245,9 +241,18 @@ describe('CI workflow – steps', () => {
     expect(step!.run).toContain('npm run lint')
   })
 
-  it('Lint step should NOT have continue-on-error set (it is not present in the YAML)', () => {
+  it('Lint step should use the "--if-present" flag', () => {
+    const step = steps.find((s) => s.name === 'Lint')
+    expect(step!.run).toContain('--if-present')
+  })
+
+  it('Lint step full command should be "npm run lint --if-present"', () => {
+    const step = steps.find((s) => s.name === 'Lint')
+    expect(step!.run).toBe('npm run lint --if-present')
+  })
+
+  it('Lint step should NOT have continue-on-error set', () => {
     const step = steps.find((s) => s.name === 'Lint') as Record<string, unknown>
-    // The CI workflow does not declare continue-on-error on the lint step
     expect(step!['continue-on-error']).toBeUndefined()
   })
 
@@ -257,19 +262,19 @@ describe('CI workflow – steps', () => {
     expect(step).toBeDefined()
   })
 
-  it('"Run Tests" step should run "npm test --if-present"', () => {
+  it('"Run Tests" step full command should be "npm run test -- --passWithNoTests"', () => {
     const step = steps.find((s) => s.name === 'Run Tests')
-    expect(step!.run).toBe('npm test --if-present')
+    expect(step!.run).toBe('npm run test -- --passWithNoTests')
   })
 
-  it('"Run Tests" step should contain "npm test"', () => {
+  it('"Run Tests" step should invoke "npm run test"', () => {
     const step = steps.find((s) => s.name === 'Run Tests')
-    expect(step!.run).toContain('npm test')
+    expect(step!.run).toContain('npm run test')
   })
 
-  it('"Run Tests" step should pass the --if-present flag', () => {
+  it('"Run Tests" step should pass the --passWithNoTests flag', () => {
     const step = steps.find((s) => s.name === 'Run Tests')
-    expect(step!.run).toContain('--if-present')
+    expect(step!.run).toContain('--passWithNoTests')
   })
 
   // --- Build ---
@@ -281,6 +286,11 @@ describe('CI workflow – steps', () => {
   it('Build step should run "npm run build"', () => {
     const step = steps.find((s) => s.name === 'Build')
     expect(step!.run).toContain('npm run build')
+  })
+
+  it('Build step full command should be "npm run build"', () => {
+    const step = steps.find((s) => s.name === 'Build')
+    expect(step!.run).toBe('npm run build')
   })
 })
 
@@ -315,6 +325,16 @@ describe('CI workflow – step ordering', () => {
     expect(installIdx).toBeLessThan(lintIdx)
     expect(lintIdx).toBeLessThan(testIdx)
     expect(testIdx).toBeLessThan(buildIdx)
+  })
+
+  it('checkout should be the very first step (index 0)', () => {
+    const checkoutIdx = steps.findIndex((s) => s.uses?.startsWith('actions/checkout'))
+    expect(checkoutIdx).toBe(0)
+  })
+
+  it('build should be the very last step', () => {
+    const buildIdx = steps.findIndex((s) => s.name === 'Build')
+    expect(buildIdx).toBe(steps.length - 1)
   })
 })
 
@@ -403,5 +423,18 @@ describe('CI workflow – Node.js version', () => {
     for (const step of nodeSteps) {
       expect(String(step.with!['node-version'])).toBe('20')
     }
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Step name uniqueness
+// ---------------------------------------------------------------------------
+
+describe('CI workflow – step name uniqueness', () => {
+  it('all step names should be unique', () => {
+    const steps = workflow.jobs['ci'].steps
+    const names = steps.map((s) => s.name).filter(Boolean)
+    const uniqueNames = new Set(names)
+    expect(uniqueNames.size).toBe(names.length)
   })
 })
