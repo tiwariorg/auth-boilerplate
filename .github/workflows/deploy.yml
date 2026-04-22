@@ -22,58 +22,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Detect package manager
-        id: detect-pm
-        run: |
-          if [ -f yarn.lock ]; then
-            echo "manager=yarn" >> $GITHUB_OUTPUT
-            echo "install=yarn install --frozen-lockfile" >> $GITHUB_OUTPUT
-            echo "build=yarn build" >> $GITHUB_OUTPUT
-          elif [ -f pnpm-lock.yaml ]; then
-            echo "manager=pnpm" >> $GITHUB_OUTPUT
-            echo "install=pnpm install --frozen-lockfile" >> $GITHUB_OUTPUT
-            echo "build=pnpm build" >> $GITHUB_OUTPUT
-          else
-            echo "manager=npm" >> $GITHUB_OUTPUT
-            echo "install=npm ci" >> $GITHUB_OUTPUT
-            echo "build=npm run build" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Enable pnpm via corepack
-        if: steps.detect-pm.outputs.manager == 'pnpm'
-        run: corepack enable
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: ${{ steps.detect-pm.outputs.manager }}
+          cache: 'npm'
 
-      - name: Install dependencies
-        run: ${{ steps.detect-pm.outputs.install }}
+      - name: Install Dependencies
+        run: npm ci
 
       - name: Build
-        run: ${{ steps.detect-pm.outputs.build }}
+        run: npm run build
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Determine build output directory
-        id: detect-output
-        run: |
-          if [ -d dist ]; then
-            echo "path=dist" >> $GITHUB_OUTPUT
-          elif [ -d build ]; then
-            echo "path=build" >> $GITHUB_OUTPUT
-          else
-            echo "::error::No dist or build directory found after build step"
-            exit 1
-          fi
-
-      - name: Upload Pages artifact
+      - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ${{ steps.detect-output.outputs.path }}
+          path: './dist'
 
   deploy:
     runs-on: ubuntu-latest
