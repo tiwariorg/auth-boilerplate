@@ -6,6 +6,9 @@
  * Responsibilities:
  *   - Provides application-wide authentication state via <AuthProvider>.
  *   - Establishes client-side routing via <BrowserRouter>.
+ *   - Sets `basename='/auth-boilerplate/'` so that all client-side routes are
+ *     served under the GitHub Pages subdirectory without requiring every
+ *     <Link>, <Navigate>, or navigate() call to repeat the prefix.
  *   - Declares the top-level route tree:
  *       /login      → LoginPage (public)
  *       /dashboard  → DashboardPage (protected — requires authentication)
@@ -14,7 +17,7 @@
  * Props: none
  * State: none — this is a pure composition/wiring component.
  *
- * Ticket: KAN-3
+ * Ticket: KAN-4
  */
 
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
@@ -32,11 +35,16 @@ import { ProtectedRoute } from './components/ProtectedRoute';
  *
  * The application root. Wraps all children in the authentication context and
  * the browser router, then defines the top-level route configuration.
+ *
+ * The `basename` prop on <BrowserRouter> instructs React Router to treat
+ * '/auth-boilerplate/' as the root of the app, so all route paths and
+ * navigation helpers (navigate(), <Link to="">, <Navigate to="">) remain
+ * relative to that root (e.g. '/login' resolves to '/auth-boilerplate/login').
  */
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <BrowserRouter basename="/auth-boilerplate/">
         <Routes>
           {/* Public route — accessible without authentication */}
           <Route path="/login" element={<LoginPage />} />
