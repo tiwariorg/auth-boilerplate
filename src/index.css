@@ -1,7 +1,9 @@
 /* =============================================================================
-   Global CSS Reset
-   KAN-3
+   Global Styles
+   KAN-6 — auth-boilerplate
    ============================================================================= */
+
+@import "tailwindcss";
 
 /* Apply border-box sizing to every element and its pseudo-elements */
 *,

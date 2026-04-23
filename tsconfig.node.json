@@ -18,10 +18,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true,
-
-    /* Vitest types so vite.config.ts can use the `test` block */
-    "types": ["vitest"]
+    "noUncheckedSideEffectImports": true
   },
   "include": ["vite.config.ts"]
 }
