@@ -2,25 +2,63 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Auth Boilerplate</title>
+
+    <!--
+      Favicon: inline data URI — no hardcoded asset path, no external file
+      dependency. Vite processes /src/main.tsx as the sole asset entry point;
+      everything else is handled at runtime by the browser.
+    -->
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔑</text></svg>"
+    />
+
+    <!--
+      SPA redirect handler for GitHub Pages.
+      When GitHub Pages serves a 404, public/404.html encodes the original path
+      into the query string (e.g. /?/dashboard). This script decodes that value
+      and replaces the browser history entry with the real path so React Router
+      can pick up the correct route on the first render — no server-side config
+      required.
+
+      Paired with: public/404.html
+      Reference:   https://github.com/rafgraph/spa-github-pages
+    -->
     <script>
-      // Handle SPA redirect from 404.html
-      (function(l) {
+      (function (l) {
         if (l.search[1] === '/') {
-          var decoded = l.search.slice(1).split('&').map(function(s) {
-            return s.replace(/~and~/g, '&');
-          }).join('?');
-          window.history.replaceState(null, null,
-            l.pathname.slice(0, -1) + decoded + l.hash
+          var decoded = l.search
+            .slice(1)
+            .split('&')
+            .map(function (s) {
+              return s.replace(/~and~/g, '&');
+            })
+            .join('?');
+          window.history.replaceState(
+            null,
+            null,
+            l.pathname.slice(0, -1) + decoded + l.hash,
           );
         }
       }(window.location));
     </script>
   </head>
   <body>
+    <!--
+      #root — React's mount target. The application shell is injected here by
+      ReactDOM.createRoot() in /src/main.tsx.
+    -->
     <div id="root"></div>
+
+    <!--
+      Module entry point — Vite resolves, bundles, and fingerprints this file
+      (and all its transitive imports) at build time. The /src/ prefix is
+      intentional: Vite's dev server and build pipeline both treat it as the
+      application entry point, not a static asset.
+    -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
