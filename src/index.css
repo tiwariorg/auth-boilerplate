@@ -5,24 +5,164 @@
 
 @import "tailwindcss";
 
-/* Apply border-box sizing to every element and its pseudo-elements */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+/* -----------------------------------------------------------------------------
+   Design Tokens — @theme
+   Defines the custom CSS variables that extend Tailwind's design system.
+   All tokens declared here become available as Tailwind utility classes, e.g.
+   `bg-primary`, `text-primary-dark`, `bg-gray-50`, etc.
+   ----------------------------------------------------------------------------- */
+
+@theme {
+  /* ── Brand / primary palette (Indigo) ────────────────────────────────────── */
+
+  /** indigo-600 — primary interactive colour (buttons, focus rings, links) */
+  --color-primary:       #4f46e5;
+
+  /** indigo-700 — darker variant used for hover / active states */
+  --color-primary-dark:  #4338ca;
+
+  /** indigo-50 — very light indigo for highlighted backgrounds / badges */
+  --color-primary-light: #eef2ff;
+
+  /* ── Neutral gray scale ───────────────────────────────────────────────────── */
+
+  /** gray-50 — near-white page background */
+  --color-gray-50:  #f9fafb;
+
+  /** gray-100 — subtle dividers, input backgrounds */
+  --color-gray-100: #f3f4f6;
+
+  /** gray-200 — borders, card separators */
+  --color-gray-200: #e5e7eb;
+
+  /** gray-300 — disabled states, placeholder text */
+  --color-gray-300: #d1d5db;
+
+  /** gray-400 — muted icons, secondary borders */
+  --color-gray-400: #9ca3af;
+
+  /** gray-500 — subdued body text, captions */
+  --color-gray-500: #6b7280;
+
+  /** gray-600 — medium-emphasis body copy */
+  --color-gray-600: #4b5563;
+
+  /** gray-700 — label text, form elements */
+  --color-gray-700: #374151;
+
+  /** gray-800 — high-emphasis secondary headings */
+  --color-gray-800: #1f2937;
+
+  /** gray-900 — primary heading / body text colour */
+  --color-gray-900: #111827;
+
+  /* ── Typography ───────────────────────────────────────────────────────────── */
+
+  /**
+   * Inter is loaded via @font-face below; the stack falls back progressively
+   * to built-in system fonts so text renders immediately even before Inter
+   * has been downloaded.
+   */
+  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+               "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-/* Remove default margin and padding from the document body */
-body {
-  margin: 0;
-  padding: 0;
+/* -----------------------------------------------------------------------------
+   @font-face — Inter
+   Variable-font subset served from the project's public directory.
+   Uses `font-display: swap` so text is visible immediately while the font
+   file loads, avoiding invisible-text flashes.
+   ----------------------------------------------------------------------------- */
 
-  /* System-native font stack */
-  font-family: system-ui, sans-serif;
+@font-face {
+  font-family: "Inter";
+  font-style:  normal;
+  font-weight: 100 900;         /* variable font — covers the full weight axis */
+  font-display: swap;
+  src: local("Inter"),
+       url("/fonts/inter-variable.woff2") format("woff2");
+}
 
-  /* Comfortable default line height */
-  line-height: 1.5;
+/* -----------------------------------------------------------------------------
+   Base / reset styles
+   Applied globally via @layer base so they integrate correctly with
+   Tailwind's preflight layer without fighting specificity.
+   ----------------------------------------------------------------------------- */
 
-  /* Smoother font rendering on WebKit/Blink browsers */
-  -webkit-font-smoothing: antialiased;
+@layer base {
+  /* Apply border-box sizing universally — prevents surprising width overflows */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  /* Suppress user-agent margin/padding on the root elements */
+  html,
+  body {
+    margin:  0;
+    padding: 0;
+  }
+
+  body {
+    /* ── Font ─────────────────────────────────────────────────────────────── */
+    font-family: var(--font-sans);
+
+    /* ── Comfortable default line height for body copy ───────────────────── */
+    line-height: 1.5;
+
+    /* ── Background matching gray-50 design token ────────────────────────── */
+    background-color: var(--color-gray-50);
+
+    /* ── Primary text colour matching gray-900 design token ──────────────── */
+    color: var(--color-gray-900);
+
+    /* ── Antialiased font rendering (WebKit / Blink) ─────────────────────── */
+    -webkit-font-smoothing:  antialiased;
+
+    /* ── Antialiased font rendering (Firefox / Gecko) ───────────────────── */
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Tighten heading line heights so multi-line titles don't feel too airy */
+  h1, h2, h3, h4, h5, h6 {
+    line-height: 1.25;
+  }
+
+  /* Remove list bullets/numbers when lists carry no semantic list role */
+  ul[role="list"],
+  ol[role="list"] {
+    list-style: none;
+    margin:  0;
+    padding: 0;
+  }
+
+  /* Improve media defaults — block display prevents inline-gap artefacts */
+  img,
+  picture,
+  video,
+  canvas,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  /* Inputs / buttons inherit the document font by default (user-agent override) */
+  input,
+  button,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  /* Prevent text overflow on narrow containers */
+  p,
+  h1, h2, h3, h4, h5, h6 {
+    overflow-wrap: break-word;
+  }
+
+  /* Ensure the React root fills the full viewport height */
+  #root {
+    min-height: 100vh;
+  }
 }
